@@ -1,0 +1,2682 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nini Planner </title>
+    <meta name="description" content="برنامه‌ریز هوشمند وظایف، عادت‌ها و امور مالی" />
+    <meta name="theme-color" content="#0f0f14" />
+    <link rel="manifest" href="/Planner/manifest.json">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Chart  -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ══════════════════════════════════════
+           CSS VARIABLES & RESET
+        ══════════════════════════════════════ */
+        :root {
+            /* Colors — Dark theme (default) */
+            --bg-primary:    #0f0f14;
+            --bg-secondary:  #17171f;
+            --bg-card:       #1c1c26;
+            --bg-card-hover: #22222e;
+            --bg-input:      #13131a;
+            --border:        rgba(255,255,255,0.07);
+            --border-focus:  rgba(255,255,255,0.2);
+
+            --text-primary:  #f0f0f5;
+            --text-secondary:#9090a8;
+            --text-muted:    #55556a;
+
+            --accent:        #6c63ff;
+            --accent-soft:   rgba(108,99,255,0.15);
+            --accent-hover:  #7a72ff;
+            --green:         #22c55e;
+            --green-soft:    rgba(34,197,94,0.12);
+            --red:           #ef4444;
+            --red-soft:      rgba(239,68,68,0.12);
+            --amber:         #f59e0b;
+            --amber-soft:    rgba(245,158,11,0.12);
+            --blue:          #3b82f6;
+            --blue-soft:     rgba(59,130,246,0.12);
+            --pink:          #ec4899;
+            --pink-soft:     rgba(236,72,153,0.12);
+
+            --shadow-sm:     0 2px 8px rgba(0,0,0,0.4);
+            --shadow-md:     0 4px 20px rgba(0,0,0,0.5);
+            --shadow-lg:     0 8px 40px rgba(0,0,0,0.6);
+
+            --radius-sm:     8px;
+            --radius-md:     12px;
+            --radius-lg:     16px;
+            --radius-xl:     24px;
+
+            --sidebar-w:     240px;
+            --header-h:      60px;
+
+            --transition:    0.2s ease;
+            --font:          'Vazirmatn', sans-serif;
+        }
+
+        /* Light theme */
+        body.theme-light {
+            --bg-primary:    #f5f5fa;
+            --bg-secondary:  #eeeef5;
+            --bg-card:       #ffffff;
+            --bg-card-hover: #f8f8ff;
+            --bg-input:      #f0f0f8;
+            --border:        rgba(0,0,0,0.08);
+            --border-focus:  rgba(108,99,255,0.4);
+            --text-primary:  #1a1a2e;
+            --text-secondary:#5a5a78;
+            --text-muted:    #9090b0;
+            --shadow-sm:     0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md:     0 4px 20px rgba(0,0,0,0.1);
+            --shadow-lg:     0 8px 40px rgba(0,0,0,0.15);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background var(--transition), color var(--transition);
+            line-height: 1.6;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        button { cursor: pointer; border: none; background: none; font-family: var(--font); }
+        input, textarea, select {
+            font-family: var(--font);
+            direction: rtl;
+            text-align: right;
+        }
+        img { max-width: 100%; }
+
+        /* ══════════════════════════════════════
+           SCROLLBAR
+        ══════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ══════════════════════════════════════
+           LAYOUT SHELL
+        ══════════════════════════════════════ */
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 20px 18px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--pink));
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo-text { font-size: 14px; font-weight: 700; line-height: 1.3; }
+        .sidebar-logo-sub  { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+
+        .sidebar-nav { padding: 12px 10px; flex: 1; }
+
+        .sidebar-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 12px 8px 6px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition), color var(--transition);
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: right;
+        }
+
+        .nav-link:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+        .nav-link.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-link .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+        .nav-link .nav-badge {
+            margin-right: auto;
+            margin-left: 0;
+            background: var(--red);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 99px;
+            padding: 1px 6px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 12px 10px 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+        }
+
+        .sidebar-avatar {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--pink));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user-info { flex: 1; overflow: hidden; }
+        .sidebar-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-role { font-size: 11px; color: var(--text-muted); }
+
+        .btn-theme-sidebar {
+            width: 100%;
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-top: 4px;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .btn-theme-sidebar:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+        /* ── Main Area ── */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Top Header ── */
+        .topbar {
+            height: var(--header-h);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .topbar-hamburger {
+            display: none;
+            width: 36px; height: 36px;
+            border-radius: var(--radius-sm);
+            align-items: center; justify-content: center;
+            color: var(--text-secondary);
+            font-size: 18px;
+            transition: background var(--transition);
+        }
+
+        .topbar-hamburger:hover { background: var(--bg-card-hover); }
+
+        .topbar-search {
+            flex: 1; max-width: 400px;
+            position: relative;
+        }
+
+        .topbar-search input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 36px 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: border var(--transition);
+            outline: none;
+        }
+
+        .topbar-search input:focus { border-color: var(--border-focus); }
+        .topbar-search input::placeholder { color: var(--text-muted); }
+
+        .topbar-search-icon {
+            position: absolute;
+            right: 10px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        #searchResults {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0; left: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 200;
+            overflow: hidden;
+        }
+
+        .search-item {
+            padding: 10px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .search-item:hover { background: var(--bg-card-hover); }
+        .search-empty { padding: 14px; color: var(--text-muted); font-size: 13px; text-align: center; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 8px; margin-right: auto; }
+
+        .topbar-btn {
+            width: 36px; height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+            font-size: 16px;
+            position: relative;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .topbar-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+        .topbar-notif-dot {
+            position: absolute;
+            top: 6px; left: 6px;
+            width: 8px; height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+            border: 2px solid var(--bg-secondary);
+        }
+
+        .topbar-user {
+            display: flex; align-items: center; gap: 8px;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+
+        .topbar-user:hover { background: var(--bg-card-hover); }
+
+        .topbar-avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--pink));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+        }
+
+        #headerUsername { font-size: 13px; font-weight: 500; }
+
+        /* ── Page Content ── */
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .page { animation: fadeIn 0.25s ease; }
+        .page.hidden { display: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ══════════════════════════════════════
+           COMMON COMPONENTS
+        ══════════════════════════════════════ */
+
+        /* Page Header */
+        .page-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap; gap: 12px;
+        }
+
+        .page-title { font-size: 22px; font-weight: 700; }
+        .page-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            transition: box-shadow var(--transition);
+        }
+
+        .card:hover { box-shadow: var(--shadow-sm); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 20px rgba(108,99,255,0.35); }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-focus); }
+
+        .btn-danger {
+            background: var(--red-soft);
+            color: var(--red);
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+
+        .btn-ghost {
+            color: var(--text-secondary);
+        }
+        .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+        .btn-icon {
+            width: 34px; height: 34px; padding: 0;
+            border-radius: var(--radius-sm);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 13.5px;
+            transition: border var(--transition);
+            outline: none;
+        }
+
+        .form-control:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-soft); }
+        .form-control::placeholder { color: var(--text-muted); }
+
+        textarea.form-control { resize: vertical; min-height: 90px; }
+
+        select.form-control { cursor: pointer; appearance: none; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .form-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+        /* Badges */
+        .badge {
+            display: inline-flex; align-items: center;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-accent  { background: var(--accent-soft);  color: var(--accent); }
+        .badge-green   { background: var(--green-soft);   color: var(--green); }
+        .badge-red     { background: var(--red-soft);     color: var(--red); }
+        .badge-amber   { background: var(--amber-soft);   color: var(--amber); }
+        .badge-blue    { background: var(--blue-soft);    color: var(--blue); }
+
+        /* Progress Bar */
+        .progress-bar-track {
+            background: var(--bg-input);
+            border-radius: 99px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: var(--accent);
+            transition: width 0.6s ease;
+        }
+
+        /* Divider */
+        .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon { font-size: 40px; margin-bottom: 14px; opacity: 0.6; }
+        .empty-state-title { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .empty-state-desc { font-size: 13.5px; margin-bottom: 20px; }
+
+        /* ══════════════════════════════════════
+           DASHBOARD PAGE
+        ══════════════════════════════════════ */
+        .dash-greeting-section { margin-bottom: 28px; }
+
+        .dash-greeting {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .dash-date {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 60px; height: 60px;
+            border-radius: 0 var(--radius-lg) 0 60px;
+            opacity: 0.12;
+        }
+
+        .stat-card.accent::before  { background: var(--accent); }
+        .stat-card.green::before   { background: var(--green); }
+        .stat-card.amber::before   { background: var(--amber); }
+        .stat-card.blue::before    { background: var(--blue); }
+        .stat-card.red::before     { background: var(--red); }
+        .stat-card.pink::before    { background: var(--pink); }
+
+        .stat-icon {
+            font-size: 22px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+        .stat-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            display: flex; align-items: center; gap: 4px;
+        }
+
+        /* Dash Columns */
+        .dash-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .dash-column-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .dash-column-title { font-size: 14px; font-weight: 700; }
+
+        /* Quick Items */
+        .dash-task-item, .dash-habit-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .dash-task-item:last-child, .dash-habit-item:last-child { border-bottom: none; }
+
+        .dash-task-dot, .dash-habit-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .dash-task-title, .dash-habit-title { flex: 1; }
+
+        .dash-task-done-btn, .dash-habit-done-btn {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+
+        .dash-task-done-btn {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+        .dash-task-done-btn:hover { background: var(--green); color: #fff; }
+
+        .dash-habit-done-btn { font-size: 18px; background: none; }
+        .dash-habit-done-btn:hover { transform: scale(1.2); }
+
+        .dash-empty {
+            padding: 20px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* Progress Section */
+        .dash-progress-section { margin-top: 6px; }
+        .dash-progress-row {
+            display: flex; align-items: center; gap: 10px; margin-top: 12px;
+        }
+        .dash-progress-label { font-size: 13px; flex: 1; }
+        .dash-progress-pct { font-size: 12px; color: var(--text-muted); width: 32px; text-align: left; }
+        .dash-progress-row .progress-bar-track { flex: 1; }
+
+        /* ══════════════════════════════════════
+           TASKS PAGE
+        ══════════════════════════════════════ */
+        .tasks-toolbar {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .task-filter-tabs { display: flex; gap: 4px; }
+
+        .task-filter-tab {
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all var(--transition);
+        }
+
+        .task-filter-tab:hover { background: var(--bg-card-hover); }
+        .task-filter-tab.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+        .tasks-sort-select {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* Kanban Columns */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            min-height: 400px;
+        }
+
+        .kanban-col {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            min-height: 300px;
+        }
+
+        .kanban-col-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .kanban-col-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .kanban-col-count {
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 7px;
+            border-radius: 99px;
+        }
+
+        /* Task Card */
+        .task-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all var(--transition);
+            position: relative;
+        }
+
+        .task-card:hover { box-shadow: var(--shadow-sm); border-color: var(--border-focus); }
+        .task-card:active { cursor: grabbing; }
+        .task-card.dragging { opacity: 0.5; transform: scale(0.97); }
+
+        .task-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+
+        .task-card-title { font-size: 13.5px; font-weight: 600; line-height: 1.4; flex: 1; }
+
+        .task-card-prio {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        .task-card-meta {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .task-card-date { font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; gap: 3px; }
+        .task-card-date.overdue { color: var(--red); }
+
+        .task-card-actions {
+            display: flex; gap: 4px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .task-card:hover .task-card-actions { opacity: 1; }
+
+        .task-card-action {
+            width: 26px; height: 26px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            transition: all var(--transition);
+        }
+
+        .task-card-action:hover { background: var(--bg-input); color: var(--text-primary); }
+
+        /* Drop Zone */
+        .kanban-col.drag-over { border: 2px dashed var(--accent); }
+
+        /* ══════════════════════════════════════
+           HABITS PAGE
+        ══════════════════════════════════════ */
+        .habits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .habit-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            transition: all var(--transition);
+        }
+
+        .habit-card:hover { box-shadow: var(--shadow-sm); }
+
+        .habit-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+
+        .habit-color-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .habit-title { font-size: 15px; font-weight: 700; flex: 1; margin: 0 10px; }
+        .habit-category { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .habit-streak {
+            text-align: center;
+            padding: 6px 10px;
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+        }
+
+        .habit-streak-num { font-size: 18px; font-weight: 800; }
+        .habit-streak-label { font-size: 10px; color: var(--text-muted); }
+
+        .habit-week-track {
+            display: flex; gap: 4px;
+            margin-bottom: 14px;
+        }
+
+        .habit-day-dot {
+            flex: 1;
+            height: 6px;
+            border-radius: 99px;
+            background: var(--bg-input);
+            transition: all var(--transition);
+        }
+
+        .habit-day-dot.done { background: var(--accent); }
+
+        .habit-card-footer {
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .habit-toggle-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            transition: all var(--transition);
+        }
+
+        .habit-toggle-btn.done {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+
+        .habit-toggle-btn.undone {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+        }
+
+        .habit-toggle-btn.undone:hover { background: var(--accent-soft); color: var(--accent); }
+
+        /* Heatmap */
+        #habitsHeatmap { margin-top: 24px; }
+
+        /* ══════════════════════════════════════
+           FINANCE PAGE
+        ══════════════════════════════════════ */
+        .finance-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .finance-summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            text-align: center;
+            transition: all var(--transition);
+        }
+
+        .finance-summary-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+        .finance-summary-icon { font-size: 24px; margin-bottom: 10px; }
+        .finance-summary-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+        .finance-summary-value { font-size: 20px; font-weight: 800; }
+
+        /* Budget Bar */
+        .budget-section { margin-bottom: 24px; }
+        .budget-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .budget-label { font-size: 13px; min-width: 100px; }
+        .budget-bar { flex: 1; }
+        .budget-pct { font-size: 12px; color: var(--text-muted); min-width: 36px; text-align: left; }
+
+        /* Transactions */
+        .transactions-list { }
+
+        .transaction-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            transition: background var(--transition);
+        }
+
+        .transaction-item:last-child { border-bottom: none; }
+
+        .transaction-icon {
+            width: 38px; height: 38px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .transaction-icon.income  { background: var(--green-soft); }
+        .transaction-icon.expense { background: var(--red-soft); }
+
+        .transaction-info { flex: 1; }
+        .transaction-title    { font-size: 13.5px; font-weight: 600; }
+        .transaction-category { font-size: 12px; color: var(--text-muted); }
+        .transaction-date     { font-size: 11px; color: var(--text-muted); }
+
+        .transaction-amount {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .transaction-amount.income  { color: var(--green); }
+        .transaction-amount.expense { color: var(--red); }
+
+        /* Chart placeholder */
+        .chart-container {
+            background: var(--bg-input);
+            border-radius: var(--radius-md);
+            height: 200px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        /* ══════════════════════════════════════
+           BACKUP PAGE (Export/Import)
+        ══════════════════════════════════════ */
+        .backup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .backup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .backup-card-icon { font-size: 32px; margin-bottom: 14px; }
+        .backup-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .backup-card-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.7; }
+
+        .backup-dropzone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .backup-dropzone:hover, .backup-dropzone.drag-over {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .backup-dropzone-icon { font-size: 28px; margin-bottom: 8px; color: var(--text-muted); }
+        .backup-dropzone-text { font-size: 13px; color: var(--text-muted); }
+
+        /* ══════════════════════════════════════
+           MODAL
+        ══════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.hidden { display: none; }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            width: 100%; max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.25s ease;
+        }
+
+        .modal-lg { max-width: 680px; }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 22px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title { font-size: 17px; font-weight: 700; }
+
+        .modal-close {
+            width: 30px; height: 30px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            font-size: 20px;
+            line-height: 1;
+            transition: all var(--transition);
+        }
+
+        .modal-close:hover { background: var(--red-soft); color: var(--red); }
+
+        .modal-body { padding: 20px 22px; }
+
+        .modal-footer {
+            padding: 14px 22px 20px;
+            display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ══════════════════════════════════════
+           NOTIFICATION PANEL
+        ══════════════════════════════════════ */
+        .notif-panel {
+            position: fixed;
+            top: var(--header-h);
+            left: 0;
+            width: 340px;
+            max-height: calc(100vh - var(--header-h) - 20px);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 500;
+            overflow-y: auto;
+            transition: transform var(--transition), opacity var(--transition);
+        }
+
+        .notif-panel.hidden { transform: translateY(-10px); opacity: 0; pointer-events: none; }
+
+        .notif-panel-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .notif-panel-title { font-size: 14px; font-weight: 700; }
+
+        .notif-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            display: flex; align-items: flex-start; gap: 10px;
+            transition: background var(--transition);
+        }
+
+        .notif-item:hover { background: var(--bg-card-hover); }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item.unread { background: var(--accent-soft); }
+
+        .notif-icon { font-size: 18px; flex-shrink: 0; }
+        .notif-text { flex: 1; }
+        .notif-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+        /* ══════════════════════════════════════
+           TOAST
+        ══════════════════════════════════════ */
+        #toastContainer {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 9999;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .toast {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            font-size: 13.5px;
+            font-weight: 500;
+            max-width: 340px;
+            transform: translateX(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .toast.show { transform: translateX(0); opacity: 1; }
+
+        .toast.success { border-right: 3px solid var(--green); }
+        .toast.error   { border-right: 3px solid var(--red); }
+        .toast.warning { border-right: 3px solid var(--amber); }
+        .toast.info    { border-right: 3px solid var(--accent); }
+
+        .toast-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .toast.success .toast-icon { color: var(--green); }
+        .toast.error   .toast-icon { color: var(--red); }
+        .toast.warning .toast-icon { color: var(--amber); }
+        .toast.info    .toast-icon { color: var(--accent); }
+
+        /* ══════════════════════════════════════
+           MOBILE SIDEBAR
+        ══════════════════════════════════════ */
+        #mobileSidebar {
+            position: fixed; inset: 0;
+            background: var(--bg-secondary);
+            z-index: 800;
+            width: var(--sidebar-w);
+            overflow-y: auto;
+            transform: translateX(0);
+            box-shadow: var(--shadow-lg);
+        }
+
+        #mobileSidebar.hidden { display: none; }
+
+        #sidebarOverlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 790;
+        }
+
+        #sidebarOverlay.hidden { display: none; }
+
+        /* ══════════════════════════════════════
+           ONBOARDING OVERLAY
+        ══════════════════════════════════════ */
+        #onboardingOverlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #onboardingOverlay.hidden { display: none; }
+
+        /* Steps visibility */
+        .onboarding-step { display: none; }
+        .onboarding-step.active { display: block; }
+
+        .onboarding-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 40px 36px;
+            max-width: 460px;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .onboarding-logo { font-size: 48px; margin-bottom: 20px; }
+        .onboarding-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+        .onboarding-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.7; }
+
+        .onboarding-input-wrap { text-align: right; margin-bottom: 20px; }
+
+        .onboarding-steps {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 30px;
+        }
+        .onboarding-step-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: background var(--transition);
+        }
+        .onboarding-step-dot.active { background: var(--accent); }
+
+        /* ══════════════════════════════════════
+           REMINDERS SIDEBAR
+        ══════════════════════════════════════ */
+        #remindersSidebar {
+            position: fixed;
+            top: var(--header-h);
+            left: 0;
+            bottom: 0;
+            width: 300px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            z-index: 600;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        #remindersSidebar.open { transform: translateX(0); }
+
+        .reminders-header {
+            padding: 18px 16px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .reminders-title { font-size: 15px; font-weight: 700; }
+
+        .reminder-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .reminder-item:last-child { border-bottom: none; }
+
+        .reminder-check { margin-top: 2px; cursor: pointer; accent-color: var(--accent); }
+        .reminder-text { flex: 1; }
+        .reminder-title { font-weight: 500; }
+        .reminder-time { font-size: 11px; color: var(--text-muted); }
+        .reminder-overdue { color: var(--red); }
+
+        /* ══════════════════════════════════════
+           UTILITY CLASSES
+        ══════════════════════════════════════ */
+        .hidden { display: none !important; }
+
+        .flex { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .flex-between { display: flex; align-items: center; justify-content: space-between; }
+        .gap-8  { gap: 8px; }
+        .gap-12 { gap: 12px; }
+        .gap-16 { gap: 16px; }
+        .mt-8   { margin-top: 8px; }
+        .mt-12  { margin-top: 12px; }
+        .mt-16  { margin-top: 16px; }
+        .mt-24  { margin-top: 24px; }
+        .mb-8   { margin-bottom: 8px; }
+        .mb-12  { margin-bottom: 12px; }
+        .mb-16  { margin-bottom: 16px; }
+        .text-muted { color: var(--text-muted); }
+        .text-sm { font-size: 13px; }
+        .font-bold { font-weight: 700; }
+        .text-center { text-align: center; }
+        .w-full { width: 100%; }
+
+        /* ══════════════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════════════ */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .topbar-hamburger { display: flex; }
+            .kanban-board { grid-template-columns: 1fr; }
+            .dash-columns { grid-template-columns: 1fr; }
+            .finance-summary { grid-template-columns: 1fr 1fr; }
+            .backup-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .page-content { padding: 16px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .finance-summary { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .topbar-search { display: none; }
+            .modal { max-width: 100%; }
+            #toastContainer { left: 12px; right: 12px; bottom: 16px; }
+            .toast { max-width: 100%; }
+        }
+
+        /* ══════════════════════════════════════
+           LOADING SPINNER
+        ══════════════════════════════════════ */
+        .spinner {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ══════════════════════════════════════
+           FINANCE CHART MINI
+        ══════════════════════════════════════ */
+        .finance-chart-bar-wrap { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+        .finance-chart-bar {
+            flex: 1; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            transition: height 0.5s ease;
+            min-height: 4px;
+        }
+        .finance-chart-bar.income  { background: var(--green); opacity: 0.8; }
+        .finance-chart-bar.expense { background: var(--red);   opacity: 0.8; }
+
+        /* ══════════════════════════════════════
+           COLOR PICKER SWATCHES
+        ══════════════════════════════════════ */
+        .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+        .color-swatch {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all var(--transition);
+        }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.selected { border-color: var(--text-primary); }
+
+        /* ══════════════════════════════════════
+           PRIORITY SELECTOR
+        ══════════════════════════════════════ */
+        .priority-options { display: flex; gap: 8px; }
+        .priority-option {
+            flex: 1; padding: 7px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            text-align: center; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all var(--transition);
+        }
+        .priority-option[data-val="high"].selected   { background: var(--red-soft);   color: var(--red);   border-color: var(--red); }
+        .priority-option[data-val="medium"].selected { background: var(--amber-soft); color: var(--amber); border-color: var(--amber); }
+        .priority-option[data-val="low"].selected    { background: var(--green-soft); color: var(--green); border-color: var(--green); }
+
+        /* ══════════════════════════════════════
+           HABIT HEATMAP
+        ══════════════════════════════════════ */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(53, 1fr);
+            gap: 3px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 2px;
+            background: var(--bg-input);
+            transition: all var(--transition);
+        }
+
+        .heatmap-cell.lv1 { background: rgba(108,99,255,0.2); }
+        .heatmap-cell.lv2 { background: rgba(108,99,255,0.4); }
+        .heatmap-cell.lv3 { background: rgba(108,99,255,0.7); }
+        .heatmap-cell.lv4 { background: var(--accent); }
+
+        .heatmap-cell:hover { opacity: 0.7; }
+
+        /* ══════════════════════════════════════
+           SETTINGS (Modal داخلی)
+        ══════════════════════════════════════ */
+        .settings-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-label { font-size: 13.5px; font-weight: 500; }
+        .settings-desc  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 44px; height: 24px;
+            cursor: pointer;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            transition: all var(--transition);
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            left: 3px; top: 3px;
+            width: 16px; height: 16px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            transition: all var(--transition);
+        }
+        .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+        .toggle input:checked + .toggle-slider::before {
+            left: 23px;
+            background: #fff;
+        }
+
+        /* ══════════════════════════════════════
+           PRINT STYLES
+        ══════════════════════════════════════ */
+        @media print {
+            .sidebar, .topbar, #toastContainer { display: none; }
+            .main-area { overflow: visible; }
+            .page-content { overflow: visible; }
+        }
+        /* Analytics Table */
+        .task-analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .task-analytics-table th {
+            text-align: right;
+            padding: 12px 8px;
+            border-bottom: 2px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .task-analytics-table th:hover {
+            background: var(--bg-card-hover);
+        }
+        .task-analytics-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .task-analytics-table td.editable {
+            cursor: text;
+        }
+        .task-analytics-table td.editable:focus {
+            outline: 2px solid var(--accent);
+            background: var(--bg-input);
+        }
+        .task-analytics-table select.table-select {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px 6px;
+            color: var(--text-primary);
+            font-family: var(--font);
+            width: 100%;
+        }
+        .task-analytics-table .overdue-row {
+            background: rgba(239,68,68,0.1);
+        }
+        .task-analytics-table .overdue-row td {
+            color: var(--red);
+        }/* Analytics Table */
+        .task-analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .task-analytics-table th {
+            text-align: right;
+            padding: 12px 8px;
+            border-bottom: 2px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .task-analytics-table th:hover {
+            background: var(--bg-card-hover);
+        }
+        .task-analytics-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .task-analytics-table td.editable {
+            cursor: text;
+        }
+        .task-analytics-table td.editable:focus {
+            outline: 2px solid var(--accent);
+            background: var(--bg-input);
+        }
+        .task-analytics-table select.table-select {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px 6px;
+            color: var(--text-primary);
+            font-family: var(--font);
+            width: 100%;
+        }
+        .task-analytics-table .overdue-row {
+            background: rgba(239,68,68,0.1);
+        }
+        .task-analytics-table .overdue-row td {
+            color: var(--red);
+        }
+    </style>
+</head>
+
+<body class="theme-dark">
+
+<!-- ═══════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════ -->
+<div class="app-shell">
+
+    <!-- ── Sidebar (Desktop) ── -->
+    <aside class="sidebar">
+        <!-- Logo -->
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">🐣</div>
+            <div>
+                <div class="sidebar-logo-text">Nini</div>
+                <div class="sidebar-logo-sub">Planner</div>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">منو اصلی</div>
+
+            <button class="nav-link active" data-nav="dashboard">
+                <span class="nav-icon">⊞</span>
+                داشبورد
+            </button>
+
+            <button class="nav-link" data-nav="tasks">
+                <span class="nav-icon">✓</span>
+                وظایف
+                <span class="nav-badge" id="sidebarTasksBadge" style="display:none">0</span>
+            </button>
+
+            <button class="nav-link" data-nav="habits">
+                <span class="nav-icon">◎</span>
+                عادت‌ها
+            </button>
+
+            <button class="nav-link" data-nav="finance">
+                <span class="nav-icon">₿</span>
+                مالی
+            </button>
+
+            <div class="sidebar-section-label">ابزارها</div>
+
+            <button class="nav-link" data-nav="backup">
+                <span class="nav-icon">⤓</span>
+                پشتیبان‌گیری
+            </button>
+            <button class="nav-link" data-nav="analytics">
+                <span class="nav-icon">📊</span>
+                تحلیل وظایف
+            </button>
+
+        </nav>
+
+        <!-- Footer -->
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar">U</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="headerUsername">کاربر</div>
+                    <div class="sidebar-user-role">Plan. Track. Grow.</div>
+                </div>
+            </div>
+            <button class="btn-theme-sidebar" id="themeToggleBtn">
+                <span>☀</span>
+                <span>تغییر تم</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ── Main Area ── -->
+    <div class="main-area">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <!-- Hamburger (mobile) -->
+            <button class="topbar-hamburger" id="hamburgerBtn" aria-label="منو">
+                ☰
+            </button>
+
+            <!-- Search -->
+            <div class="topbar-search">
+                <span class="topbar-search-icon">⌕</span>
+                <input
+                        type="search"
+                        id="globalSearch"
+                        placeholder="جستجو در وظایف، عادت‌ها..."
+                        autocomplete="off"
+                        aria-label="جستجوی کلی"
+                />
+                <div id="searchResults" class="hidden"></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="topbar-actions">
+                <!-- Notifications -->
+                <button
+                        class="topbar-btn"
+                        id="notifToggleBtn"
+                        aria-label="اعلان‌ها"
+                        onclick="document.getElementById('notifPanel').classList.toggle('hidden')"
+                >
+                    🔔
+                    <span class="topbar-notif-dot" id="notifDot" style="display:none"></span>
+                </button>
+
+                <!-- Reminders -->
+                <button
+                        class="topbar-btn"
+                        aria-label="یادآورها"
+                        onclick="document.getElementById('remindersSidebar').classList.toggle('open')"
+                >
+                    ⏰
+                </button>
+
+                <!-- Settings -->
+                <button
+                        class="topbar-btn"
+                        aria-label="تنظیمات"
+                        onclick="openModal('settingsModal')"
+                >
+                    ⚙
+                </button>
+
+                <!-- Theme (mobile) -->
+                <button
+                        class="topbar-btn"
+                        id="themeToggleBtnMobile"
+                        aria-label="تغییر تم"
+                        style="display:none"
+                >
+                    ☀
+                </button>
+
+                <!-- User -->
+                <div class="topbar-user" onclick="openModal('settingsModal')">
+                    <div class="topbar-avatar">U</div>
+                    <span id="headerUsername2" class="text-sm" style="display:none"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="page-content" id="pageContent">
+
+            <!-- ─────────────────────
+                 PAGE: DASHBOARD
+            ───────────────────── -->
+            <section id="page-dashboard" class="page">
+
+                <!-- Greeting -->
+                <div class="dash-greeting-section">
+                    <div class="dash-greeting" id="dashGreeting">خوش آمدید 👋</div>
+                    <div class="dash-date" id="dashDate"></div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <!-- Tasks -->
+                    <div class="stat-card accent">
+                        <span class="stat-icon">✓</span>
+                        <div class="stat-value" id="dashDoneTasks">0</div>
+                        <div class="stat-label">وظایف انجام شده</div>
+                        <div class="stat-sub">
+                            از <span id="dashTotalTasks">0</span> وظیفه کل
+                        </div>
+                    </div>
+
+                    <div class="stat-card red">
+                        <span class="stat-icon">⚠</span>
+                        <div class="stat-value" id="dashOverdueTasks">0</div>
+                        <div class="stat-label">وظایف عقب‌افتاده</div>
+                        <div class="stat-sub">
+                            <span id="dashTodayTasks">0</span> وظیفه برای امروز
+                        </div>
+                    </div>
+
+                    <!-- Habits -->
+                    <div class="stat-card green">
+                        <span class="stat-icon">◎</span>
+                        <div class="stat-value" id="dashTodayHabits">0/0</div>
+                        <div class="stat-label">عادت‌های امروز</div>
+                        <div class="stat-sub">
+                            🔥 بهترین رشته: <span id="dashMaxStreak">0</span> روز
+                        </div>
+                    </div>
+
+                    <!-- Finance -->
+                    <div class="stat-card amber">
+                        <span class="stat-icon">↑</span>
+                        <div class="stat-value" id="dashIncome" style="font-size:18px">۰</div>
+                        <div class="stat-label">درآمد ماه جاری</div>
+                    </div>
+
+                    <div class="stat-card pink">
+                        <span class="stat-icon">↓</span>
+                        <div class="stat-value" id="dashExpense" style="font-size:18px">۰</div>
+                        <div class="stat-label">هزینه ماه جاری</div>
+                    </div>
+
+                    <div class="stat-card blue">
+                        <span class="stat-icon">⚖</span>
+                        <div class="stat-value" id="dashBalance" style="font-size:18px">۰</div>
+                        <div class="stat-label">تراز کلی</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bars -->
+                <div class="card mb-16">
+                    <div class="dash-progress-section">
+                        <!-- Task Progress -->
+                        <div class="dash-progress-row">
+                            <span class="dash-progress-label">پیشرفت وظایف</span>
+                            <div class="progress-bar-track" style="flex:1">
+                                <div class="progress-bar-fill" id="dashTaskProgress" style="width:0%"></div>
+                            </div>
+                            <span class="dash-progress-pct" id="dashTaskProgressLabel">۰٪</span>
+                        </div>
+                        <!-- Habit Progress -->
+                        <div class="dash-progress-row">
+                            <span class="dash-progress-label">عادت‌های امروز</span>
+                            <div class="progress-bar-track" style="flex:1">
+                                <div class="progress-bar-fill" id="dashHabitProgress" style="width:0%; background:var(--green)"></div>
+                            </div>
+                            <span class="dash-progress-pct" id="dashHabitProgressLabel">۰٪</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Lists -->
+                <div class="dash-columns">
+                    <!-- Today Tasks -->
+                    <div class="card">
+                        <div class="dash-column-header">
+                            <span class="dash-column-title">وظایف امروز</span>
+                            <button class="btn btn-ghost btn-sm" data-nav="tasks">مشاهده همه ›</button>
+                        </div>
+                        <div id="dashQuickTasks">
+                            <div class="dash-empty">در حال بارگذاری...</div>
+                        </div>
+                    </div>
+
+                    <!-- Today Habits -->
+                    <div class="card">
+                        <div class="dash-column-header">
+                            <span class="dash-column-title">عادت‌های امروز</span>
+                            <button class="btn btn-ghost btn-sm" data-nav="habits">مشاهده همه ›</button>
+                        </div>
+                        <div id="dashQuickHabits">
+                            <div class="dash-empty">در حال بارگذاری...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─────────────────────
+                 PAGE: TASKS
+            ───────────────────── -->
+            <section id="page-tasks" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">وظایف</div>
+                        <div class="page-subtitle">مدیریت و پیگیری وظایف روزانه</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal('taskModal')" id="addTaskBtn">
+                        + وظیفه جدید
+                    </button>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="tasks-toolbar">
+                    <div class="task-filter-tabs">
+                        <button class="task-filter-tab active" data-filter="all">همه</button>
+                        <button class="task-filter-tab" data-filter="today">امروز</button>
+                        <button class="task-filter-tab" data-filter="overdue">عقب‌افتاده</button>
+                        <button class="task-filter-tab" data-filter="done">انجام‌شده</button>
+                    </div>
+                    <select class="tasks-sort-select" id="tasksSortSelect">
+                        <option value="dueDate">مرتب‌سازی: تاریخ</option>
+                        <option value="priority">مرتب‌سازی: اولویت</option>
+                        <option value="created">مرتب‌سازی: جدیدترین</option>
+                    </select>
+                </div>
+
+                <!-- Kanban Board -->
+                <div class="kanban-board" id="kanbanBoard">
+                    <!-- todo -->
+                    <div class="kanban-col" id="kanban-todo" data-status="todo">
+                        <div class="kanban-col-header">
+              <span class="kanban-col-title">
+                <span style="color:var(--amber)">●</span>
+                در انتظار
+                <span class="kanban-col-count" id="colCountTodo">0</span>
+              </span>
+                        </div>
+                        <div class="kanban-tasks" id="kanbanTasks-todo"></div>
+                    </div>
+                    <!-- inprogress -->
+                    <div class="kanban-col" id="kanban-inprogress" data-status="inprogress">
+                        <div class="kanban-col-header">
+              <span class="kanban-col-title">
+                <span style="color:var(--blue)">●</span>
+                در حال انجام
+                <span class="kanban-col-count" id="colCountInprogress">0</span>
+              </span>
+                        </div>
+                        <div class="kanban-tasks" id="kanbanTasks-inprogress"></div>
+                    </div>
+                    <!-- done -->
+                    <div class="kanban-col" id="kanban-done" data-status="done">
+                        <div class="kanban-col-header">
+              <span class="kanban-col-title">
+                <span style="color:var(--green)">●</span>
+                انجام شده
+                <span class="kanban-col-count" id="colCountDone">0</span>
+              </span>
+                        </div>
+                        <div class="kanban-tasks" id="kanbanTasks-done"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─────────────────────
+                 PAGE: HABITS
+            ───────────────────── -->
+            <section id="page-habits" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">عادت‌ها</div>
+                        <div class="page-subtitle">ساخت عادت‌های خوب، گام به گام</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal('habitModal')">
+                        + عادت جدید
+                    </button>
+                </div>
+
+                <!-- Habits Grid -->
+                <div class="habits-grid" id="habitsGrid">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">◎</div>
+                        <div class="empty-state-title">عادتی ثبت نشده</div>
+                        <div class="empty-state-desc">اولین عادت خود را بسازید!</div>
+                        <button class="btn btn-primary" onclick="openModal('habitModal')">+ افزودن عادت</button>
+                    </div>
+                </div>
+
+                <!-- Heatmap -->
+                <div id="habitsHeatmap" class="card mt-24">
+                    <div class="dash-column-header">
+                        <span class="dash-column-title">نقشه فعالیت (۱ سال اخیر)</span>
+                    </div>
+                    <div class="heatmap-grid" id="heatmapGrid"></div>
+                </div>
+            </section>
+
+            <!-- ─────────────────────
+                 PAGE: FINANCE
+            ───────────────────── -->
+            <section id="page-finance" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">مدیریت مالی</div>
+                        <div class="page-subtitle">درآمد، هزینه و بودجه</div>
+                    </div>
+                    <div class="flex gap-8">
+                        <button class="btn btn-secondary" onclick="openModal('budgetModal')">⚙ بودجه</button>
+                        <button class="btn btn-primary"  onclick="openModal('transactionModal')">+ تراکنش جدید</button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="finance-summary">
+                    <div class="finance-summary-card">
+                        <div class="finance-summary-icon">📈</div>
+                        <div class="finance-summary-label">درآمد ماه جاری</div>
+                        <div class="finance-summary-value" id="finIncome" style="color:var(--green)">۰</div>
+                    </div>
+                    <div class="finance-summary-card">
+                        <div class="finance-summary-icon">📉</div>
+                        <div class="finance-summary-label">هزینه ماه جاری</div>
+                        <div class="finance-summary-value" id="finExpense" style="color:var(--red)">۰</div>
+                    </div>
+                    <div class="finance-summary-card">
+                        <div class="finance-summary-icon">⚖️</div>
+                        <div class="finance-summary-label">تراز</div>
+                        <div class="finance-summary-value" id="finBalance">۰</div>
+                    </div>
+                </div>
+
+                <!-- Budget Bars -->
+                <div class="card mb-16" id="budgetSection">
+                    <div class="dash-column-header mb-12">
+                        <span class="dash-column-title">بودجه دسته‌بندی‌ها</span>
+                        <button class="btn btn-ghost btn-sm" onclick="openModal('budgetModal')">ویرایش</button>
+                    </div>
+                    <div id="budgetBars">
+                        <div class="text-muted text-sm text-center" style="padding:16px">بودجه‌ای تنظیم نشده</div>
+                    </div>
+                </div>
+
+                <!-- Filter -->
+                <div class="flex-between mb-12">
+                    <div class="page-title" style="font-size:16px">تراکنش‌ها</div>
+                    <div class="flex gap-8">
+                        <select class="form-control" id="finFilterMonth" style="width:auto;padding:6px 12px">
+                            <option value="">همه ماه‌ها</option>
+                        </select>
+                        <select class="form-control" id="finFilterType" style="width:auto;padding:6px 12px">
+                            <option value="">همه انواع</option>
+                            <option value="income">درآمد</option>
+                            <option value="expense">هزینه</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Transactions List -->
+                <div class="card">
+                    <div class="transactions-list" id="transactionsList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💳</div>
+                            <div class="empty-state-title">تراکنشی ثبت نشده</div>
+                            <button class="btn btn-primary mt-12" onclick="openModal('transactionModal')">+ افزودن تراکنش</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─────────────────────
+                 PAGE: BACKUP
+            ───────────────────── -->
+            <section id="page-backup" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">پشتیبان‌گیری</div>
+                        <div class="page-subtitle">خروجی و ورودی داده‌ها</div>
+                    </div>
+                </div>
+
+                <div class="backup-grid">
+                    <!-- Export -->
+                    <div class="backup-card">
+                        <div class="backup-card-icon">⤓</div>
+                        <div class="backup-card-title">خروجی گرفتن (Export)</div>
+                        <div class="backup-card-desc">
+                            تمام داده‌های شما شامل وظایف، عادت‌ها و تراکنش‌های مالی به فرمت JSON ذخیره می‌شود.
+                            این فایل را در مکان امنی نگه دارید.
+                        </div>
+                        <button class="btn btn-primary w-full" id="exportBtn">
+                            ⤓ دانلود فایل پشتیبان
+                        </button>
+                        <div class="mt-12">
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">آخرین پشتیبان</div>
+                                    <div class="settings-desc" id="lastBackupDate">هرگز</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import -->
+                    <div class="backup-card">
+                        <div class="backup-card-icon">⤒</div>
+                        <div class="backup-card-title">بازیابی (Import)</div>
+                        <div class="backup-card-desc">
+                            فایل پشتیبان JSON را بارگذاری کنید. توجه: داده‌های فعلی با فایل وارد شده جایگزین می‌شوند.
+                        </div>
+
+                        <div class="backup-dropzone" id="importDropzone" onclick="document.getElementById('importFileInput').click()">
+                            <div class="backup-dropzone-icon">📁</div>
+                            <div class="backup-dropzone-text">فایل JSON را اینجا رها کنید یا کلیک کنید</div>
+                        </div>
+
+                        <input type="file" id="importFileInput" accept=".json" style="display:none" />
+
+                        <div class="mt-12 text-muted text-sm">
+                            ⚠ این عملیات داده‌های موجود را بازنویسی می‌کند.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Stats -->
+                <div class="card mt-24">
+                    <div class="dash-column-title mb-12">آمار داده‌ها</div>
+                    <div class="stats-grid" style="margin-bottom:0">
+                        <div class="stat-card accent">
+                            <span class="stat-icon">✓</span>
+                            <div class="stat-value" id="backupTaskCount">0</div>
+                            <div class="stat-label">وظیفه</div>
+                        </div>
+                        <div class="stat-card green">
+                            <span class="stat-icon">◎</span>
+                            <div class="stat-value" id="backupHabitCount">0</div>
+                            <div class="stat-label">عادت</div>
+                        </div>
+                        <div class="stat-card amber">
+                            <span class="stat-icon">₿</span>
+                            <div class="stat-value" id="backupTransCount">0</div>
+                            <div class="stat-label">تراکنش</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Backup List Container (add after the stats card) -->
+                <div id="backupList" class="mt-24"></div>
+
+                <!-- Create Backup Button (add inside the export card or as a separate button) -->
+                <button id="createBackupBtn" class="btn btn-secondary mt-12">ایجاد نسخه پشتیبان</button>
+            </section>
+            <!-- ─────────────────────
+                 PAGE: ANALYTICS
+            ───────────────────── -->
+            <section id="page-analytics" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">📊 داشبورد تحلیلی وظایف</div>
+                        <div class="page-subtitle">آمار، نمودارها و مدیریت پیشرفته وظایف</div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="stats-grid" id="analyticsStats">
+                    <div class="stat-card accent" id="statTotalTasks">
+                        <span class="stat-icon">📋</span>
+                        <div class="stat-value" id="totalTasksCount">0</div>
+                        <div class="stat-label">کل وظایف</div>
+                    </div>
+                    <div class="stat-card green" id="statCompletedTasks">
+                        <span class="stat-icon">✓</span>
+                        <div class="stat-value" id="completedTasksCount">0</div>
+                        <div class="stat-label">انجام شده</div>
+                    </div>
+                    <div class="stat-card amber" id="statIncompleteTasks">
+                        <span class="stat-icon">⏳</span>
+                        <div class="stat-value" id="incompleteTasksCount">0</div>
+                        <div class="stat-label">انجام نشده</div>
+                    </div>
+                    <div class="stat-card red" id="statDueToday">
+                        <span class="stat-icon">📅</span>
+                        <div class="stat-value" id="dueTodayCount">0</div>
+                        <div class="stat-label">سررسید امروز</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="dash-columns" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+                    <!-- Progress Ring (using Chart.js doughnut) -->
+                    <div class="card">
+                        <div class="dash-column-header">
+                            <span class="dash-column-title">پیشرفت کلی</span>
+                        </div>
+                        <div style="display: flex; justify-content: center; padding: 20px 0;">
+                            <canvas id="progressChart" width="200" height="200" style="max-width:200px; max-height:200px;"></canvas>
+                        </div>
+                        <div class="text-center text-muted" id="progressPercent">0%</div>
+                    </div>
+
+                    <!-- Category Distribution -->
+                    <div class="card">
+                        <div class="dash-column-header">
+                            <span class="dash-column-title">دسته‌بندی وظایف</span>
+                        </div>
+                        <canvas id="categoryChart" width="300" height="200" style="max-height:200px;"></canvas>
+                    </div>
+
+                    <!-- Priority Distribution (will be in next row) -->
+                </div>
+
+                <!-- Second row: Priority Chart + maybe extra -->
+                <div class="dash-columns" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+                    <div class="card">
+                        <div class="dash-column-header">
+                            <span class="dash-column-title">توزیع اولویت</span>
+                        </div>
+                        <canvas id="priorityChart" width="300" height="200" style="max-height:200px;"></canvas>
+                    </div>
+                    <div class="card">
+                        <div class="dash-column-header">
+                            <span class="dash-column-title">راهنما</span>
+                        </div>
+                        <div style="padding: 16px; color: var(--text-muted);">
+                            <p>🔴 اولویت بالا</p>
+                            <p>🟡 اولویت متوسط</p>
+                            <p>🟢 اولویت پایین</p>
+                            <p>⚫ بدون اولویت</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Task Table -->
+                <div class="card">
+                    <div class="dash-column-header" style="margin-bottom: 16px;">
+                        <span class="dash-column-title">مدیریت پیشرفته وظایف</span>
+                        <div class="flex gap-8">
+                            <input type="text" id="taskTableSearch" class="form-control" placeholder="جستجو..." style="width:200px;">
+                            <select id="taskTableStatusFilter" class="form-control" style="width:130px;">
+                                <option value="all">همه وضعیت‌ها</option>
+                                <option value="todo">در انتظار</option>
+                                <option value="inprogress">در حال انجام</option>
+                                <option value="done">انجام شده</option>
+                                <option value="overdue">عقب‌افتاده</option>
+                            </select>
+                            <select id="taskTablePriorityFilter" class="form-control" style="width:130px;">
+                                <option value="all">همه اولویت‌ها</option>
+                                <option value="high">بالا</option>
+                                <option value="medium">متوسط</option>
+                                <option value="low">پایین</option>
+                            </select>
+                            <select id="taskTableTypeFilter" class="form-control" style="width:130px;">
+                                <option value="all">همه انواع</option>
+                                <option value="coursework">تکلیف درسی</option>
+                                <option value="project">پروژه</option>
+                                <option value="exam">آزمون</option>
+                                <option value="personal">شخصی</option>
+                                <option value="research">پژوهش</option>
+                                <option value="other">سایر</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="task-analytics-table" id="taskAnalyticsTable">
+                            <thead>
+                            <tr>
+                                <th data-sort="title">عنوان</th>
+                                <th data-sort="type">نوع</th>
+                                <th data-sort="desc">توضیحات</th>
+                                <th data-sort="priority">اولویت</th>
+                                <th data-sort="status">وضعیت</th>
+                                <th data-sort="dueDate">سررسید</th>
+                                <th data-sort="dueTime">زمان</th>
+                                <th data-sort="daysRemaining">روز باقی‌مانده</th>
+                                <th data-sort="score">نمره/امتیاز</th>
+                                <th>عملیات</th>
+                            </tr>
+                            </thead>
+                            <tbody id="taskTableBody">
+                            <!-- populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex-between mt-16">
+                        <div>
+                            <span id="tableStart">1</span> – <span id="tableEnd">10</span> از <span id="tableTotal">0</span>
+                        </div>
+                        <div class="flex gap-8">
+                            <button class="btn btn-secondary btn-sm" id="prevPage" disabled>‹ قبلی</button>
+                            <button class="btn btn-secondary btn-sm" id="nextPage" disabled>بعدی ›</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main><!-- /page-content -->
+    </div><!-- /main-area -->
+</div><!-- /app-shell -->
+
+
+<!-- ═══════════════════════════════════════════
+     MOBILE SIDEBAR
+═══════════════════════════════════════════ -->
+<nav id="mobileSidebar" class="hidden">
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🐣</div>
+        <div>
+            <div class="sidebar-logo-text">Nini</div>
+            <div class="sidebar-logo-sub">Planner</div>
+        </div>
+    </div>
+    <div class="sidebar-nav">
+        <button class="nav-link active" data-nav="dashboard">⊞ داشبورد</button>
+        <button class="nav-link" data-nav="tasks">✓ وظایف</button>
+        <button class="nav-link" data-nav="habits">◎ عادت‌ها</button>
+        <button class="nav-link" data-nav="finance">₿ مالی</button>
+        <button class="nav-link" data-nav="backup">⤓ پشتیبان‌گیری</button>
+        <button class="nav-link" data-nav="analytics">📊 تحلیل وظایف</button>
+    </div>
+    <div class="sidebar-footer">
+        <button class="btn-theme-sidebar" id="themeToggleBtnMobile2">
+            <span>☀</span> تغییر تم
+        </button>
+    </div>
+</nav>
+<div id="sidebarOverlay" class="hidden"></div>
+
+
+<!-- ═══════════════════════════════════════════
+     ONBOARDING OVERLAY (Multi‑Step)
+═══════════════════════════════════════════ -->
+<div id="onboardingOverlay">
+    <!-- Step 1: نام کاربری -->
+    <div class="onboarding-step active">
+        <div class="onboarding-card">
+            <div class="onboarding-logo">🐣</div>
+            <div class="onboarding-title">خوش آمدید!</div>
+            <div class="onboarding-desc">
+                Nini Planner برای مدیریت وظایف، عادت‌ها و امور مالی شماست.
+                برای شروع، نام خود را وارد کنید.
+            </div>
+            <div class="onboarding-input-wrap">
+                <label class="form-label">نام شما</label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="onboardingName"
+                        placeholder="مثال: علی رضایی"
+                        maxlength="40"
+                />
+            </div>
+            <button id="onboardingStartBtn" class="btn btn-primary w-full">شروع کنید</button>
+        </div>
+    </div>
+
+    <!-- Step 2: اهداف مالی (نمونه) -->
+    <div class="onboarding-step">
+        <div class="onboarding-card">
+            <div class="onboarding-logo">📊</div>
+            <div class="onboarding-title">تنظیم اهداف مالی</div>
+            <div class="onboarding-desc">می‌خواهید چه هدفی را دنبال کنید؟</div>
+            <!-- یک گزینه ساده برای پیشرفت -->
+            <div style="margin: 20px 0; text-align: right;">
+                <label class="form-label">هدف اصلی شما:</label>
+                <select class="form-control">
+                    <option>پس‌انداز ماهانه</option>
+                    <option>کاهش هزینه‌ها</option>
+                    <option>سرمایه‌گذاری</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-secondary w-full" data-onboarding-prev>قبلی</button>
+                <button class="btn btn-primary w-full" data-onboarding-next>بعدی</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: پایان -->
+    <div class="onboarding-step">
+        <div class="onboarding-card">
+            <div class="onboarding-logo">✅</div>
+            <div class="onboarding-title">آماده اید!</div>
+            <div class="onboarding-desc">حساب شما با موفقیت ساخته شد. اکنون می‌توانید از برنامه استفاده کنید.</div>
+            <button id="onboardingFinishBtn" class="btn btn-success w-full">تمام شد</button>
+        </div>
+    </div>
+
+    <!-- دایره‌های مرحله (صرفاً تزئینی) -->
+    <div class="onboarding-steps" id="onboardingSteps">
+        <div class="onboarding-step-dot active"></div>
+        <div class="onboarding-step-dot"></div>
+        <div class="onboarding-step-dot"></div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════ -->
+
+<!-- ── Task Modal ── -->
+<div id="taskModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="taskModalTitle">وظیفه جدید</div>
+            <button class="modal-close" data-modal="taskModal" aria-label="بستن">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="taskId" />
+
+            <div class="form-group">
+                <label class="form-label" for="taskTitle">عنوان وظیفه *</label>
+                <input type="text" class="form-control" id="taskTitle" placeholder="عنوان وظیفه را بنویسید..." maxlength="100" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="taskDesc">توضیحات</label>
+                <textarea class="form-control" id="taskDesc" placeholder="توضیحات (اختیاری)" rows="3"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="taskDueDate">تاریخ سررسید</label>
+                    <input type="date" class="form-control" id="taskDueDate" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="taskStatus">وضعیت</label>
+                    <select class="form-control" id="taskStatus">
+                        <option value="todo">در انتظار</option>
+                        <option value="inprogress">در حال انجام</option>
+                        <option value="done">انجام شده</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">اولویت</label>
+                <div class="priority-options">
+                    <div class="priority-option" data-val="high">🔴 بالا</div>
+                    <div class="priority-option selected" data-val="medium">🟡 متوسط</div>
+                    <div class="priority-option" data-val="low">🟢 پایین</div>
+                </div>
+                <input type="hidden" id="taskPriority" value="medium" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="taskTags">برچسب‌ها</label>
+                <input type="text" class="form-control" id="taskTags" placeholder="برچسب‌ها با کاما جدا کنید" />
+                <div class="form-hint">مثال: کار، شخصی، فوری</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="taskReminder">یادآور</label>
+                <input type="datetime-local" class="form-control" id="taskReminder" />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger btn-sm" id="deleteTaskBtn" style="display:none; margin-left:auto">🗑 حذف</button>
+            <button class="btn btn-secondary" data-modal="taskModal">انصراف</button>
+            <button class="btn btn-primary" id="saveTaskBtn">💾 ذخیره</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Habit Modal ── -->
+<div id="habitModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="habitModalTitle">عادت جدید</div>
+            <button class="modal-close" data-modal="habitModal" aria-label="بستن">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="habitId" />
+
+            <div class="form-group">
+                <label class="form-label" for="habitTitle">عنوان عادت *</label>
+                <input type="text" class="form-control" id="habitTitle" placeholder="مثال: مطالعه روزانه، ورزش..." maxlength="60" />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="habitCategory">دسته‌بندی</label>
+                    <select class="form-control" id="habitCategory">
+                        <option value="health">سلامتی</option>
+                        <option value="fitness">ورزش</option>
+                        <option value="learning">یادگیری</option>
+                        <option value="work">کار</option>
+                        <option value="finance">مالی</option>
+                        <option value="social">اجتماعی</option>
+                        <option value="other">سایر</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="habitFrequency">تکرار</label>
+                    <select class="form-control" id="habitFrequency">
+                        <option value="daily">روزانه</option>
+                        <option value="weekly">هفتگی</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">رنگ</label>
+                <div class="color-swatches" id="habitColorPicker">
+                    <div class="color-swatch selected" data-color="#6c63ff" style="background:#6c63ff"></div>
+                    <div class="color-swatch" data-color="#22c55e" style="background:#22c55e"></div>
+                    <div class="color-swatch" data-color="#f59e0b" style="background:#f59e0b"></div>
+                    <div class="color-swatch" data-color="#3b82f6" style="background:#3b82f6"></div>
+                    <div class="color-swatch" data-color="#ec4899" style="background:#ec4899"></div>
+                    <div class="color-swatch" data-color="#ef4444" style="background:#ef4444"></div>
+                    <div class="color-swatch" data-color="#14b8a6" style="background:#14b8a6"></div>
+                    <div class="color-swatch" data-color="#f97316" style="background:#f97316"></div>
+                </div>
+                <input type="hidden" id="habitColor" value="#6c63ff" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="habitReminderTime">زمان یادآور روزانه</label>
+                <input type="time" class="form-control" id="habitReminderTime" />
+                <div class="form-hint">اختیاری — اگر پر شود، یادآور روزانه تنظیم می‌شود</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger btn-sm" id="deleteHabitBtn" style="display:none; margin-left:auto">🗑 حذف</button>
+            <button class="btn btn-secondary" data-modal="habitModal">انصراف</button>
+            <button class="btn btn-primary" id="saveHabitBtn">💾 ذخیره</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Transaction Modal ── -->
+<div id="transactionModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="transactionModalTitle">تراکنش جدید</div>
+            <button class="modal-close" data-modal="transactionModal" aria-label="بستن">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="transactionId" />
+
+            <!-- Type Tabs -->
+            <div class="flex gap-8 mb-16">
+                <button class="btn btn-primary w-full" id="tabIncome" onclick="setTransType('income')">📈 درآمد</button>
+                <button class="btn btn-secondary w-full" id="tabExpense" onclick="setTransType('expense')">📉 هزینه</button>
+            </div>
+            <input type="hidden" id="transactionType" value="income" />
+
+            <div class="form-group">
+                <label class="form-label" for="transactionTitle">عنوان *</label>
+                <input type="text" class="form-control" id="transactionTitle" placeholder="مثال: حقوق، اجاره..." maxlength="80" />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="transactionAmount">مبلغ (تومان) *</label>
+                    <input type="number" class="form-control" id="transactionAmount" placeholder="۰" min="0" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="transactionDate">تاریخ</label>
+                    <input type="date" class="form-control" id="transactionDate" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="transactionCategory">دسته‌بندی</label>
+                <select class="form-control" id="transactionCategory">
+                    <optgroup label="هزینه">
+                        <option value="food">🍔 خوراک</option>
+                        <option value="transport">🚗 حمل‌ونقل</option>
+                        <option value="health">💊 بهداشت</option>
+                        <option value="entertainment">🎮 سرگرمی</option>
+                        <option value="clothing">👗 پوشاک</option>
+                        <option value="home">🏠 مسکن</option>
+                        <option value="education">📚 آموزش</option>
+                        <option value="bills">📋 قبوض</option>
+                        <option value="shopping">🛍 خرید</option>
+                    </optgroup>
+                    <optgroup label="درآمد">
+                        <option value="salary">💼 حقوق</option>
+                        <option value="freelance">💻 فریلنس</option>
+                        <option value="investment">📈 سرمایه‌گذاری</option>
+                        <option value="gift">🎁 هدیه</option>
+                    </optgroup>
+                    <option value="other">سایر</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="transactionNote">یادداشت</label>
+                <textarea class="form-control" id="transactionNote" placeholder="توضیحات اضافه..." rows="2"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger btn-sm" id="deleteTransBtn" style="display:none; margin-left:auto">🗑 حذف</button>
+            <button class="btn btn-secondary" data-modal="transactionModal">انصراف</button>
+            <button class="btn btn-primary" id="saveTransactionBtn">💾 ذخیره</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Budget Modal ── -->
+<div id="budgetModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">تنظیم بودجه ماهانه</div>
+            <button class="modal-close" data-modal="budgetModal" aria-label="بستن">×</button>
+        </div>
+        <div class="modal-body" id="budgetModalBody">
+            <!-- Rendered by finance.js -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-modal="budgetModal">انصراف</button>
+            <button class="btn btn-primary" id="saveBudgetBtn">💾 ذخیره بودجه</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Settings Modal ── -->
+<div id="settingsModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">تنظیمات</div>
+            <button class="modal-close" data-modal="settingsModal" aria-label="بستن">×</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Profile -->
+            <div class="form-group">
+                <label class="form-label" for="settingsName">نام کاربری</label>
+                <input type="text" class="form-control" id="settingsName" placeholder="نام خود را وارد کنید" maxlength="40" />
+            </div>
+            <button class="btn btn-secondary w-full mb-16" id="saveSettingsNameBtn">
+                ✓ ذخیره نام
+            </button>
+
+            <hr class="divider" />
+
+            <!-- Theme -->
+            <div class="settings-row">
+                <div>
+                    <div class="settings-label">تم تاریک</div>
+                    <div class="settings-desc">استفاده از حالت شب</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" id="settingsDarkMode" onchange="ThemeManager.toggle()" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <!-- Notifications -->
+            <div class="settings-row">
+                <div>
+                    <div class="settings-label">اعلان‌های مرورگر</div>
+                    <div class="settings-desc">فعال‌سازی اعلان‌ها</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="requestNotifPermBtn">
+                    فعال‌سازی
+                </button>
+            </div>
+
+            <hr class="divider" />
+
+            <!-- Danger Zone -->
+            <div class="settings-row">
+                <div>
+                    <div class="settings-label" style="color:var(--red)">حذف همه داده‌ها</div>
+                    <div class="settings-desc">این عملیات برگشت‌پذیر نیست!</div>
+                </div>
+                <button class="btn btn-danger btn-sm" id="clearAllDataBtn">
+                    🗑 حذف
+                </button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-modal="settingsModal">بستن</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     NOTIFICATION PANEL
+═══════════════════════════════════════════ -->
+<div id="notifPanel" class="notif-panel hidden">
+    <div class="notif-panel-header">
+        <span class="notif-panel-title">اعلان‌ها</span>
+        <button class="btn btn-ghost btn-sm" id="markAllReadBtn">علامت‌گذاری همه</button>
+    </div>
+    <div id="notifList">
+        <div class="notif-item">
+            <span class="notif-icon">ℹ</span>
+            <span class="notif-text">هیچ اعلان جدیدی ندارید.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     REMINDERS SIDEBAR
+═══════════════════════════════════════════ -->
+<div id="remindersSidebar">
+    <div class="reminders-header">
+        <span class="reminders-title">یادآورها ⏰</span>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('remindersSidebar').classList.remove('open')">×</button>
+    </div>
+    <div id="remindersList">
+        <div class="text-center text-muted text-sm" style="padding:24px">یادآوری ندارید</div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     TOAST CONTAINER
+═══════════════════════════════════════════ -->
+<div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+
+<!-- ═══════════════════════════════════════════
+     INLINE INIT SCRIPT (قبل از JS اصلی)
+═══════════════════════════════════════════ -->
+<script>
+    // اعمال تم ذخیره‌شده قبل از رندر (جلوگیری از flash)
+    (function() {
+        const t = localStorage.getItem('slp_theme') || 'dark';
+        document.body.className = t === 'light' ? 'theme-light' : 'theme-dark';
+    })();
+
+    // Priority Options click handler
+    document.querySelectorAll('.priority-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.querySelectorAll('.priority-option').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            document.getElementById('taskPriority').value = opt.dataset.val;
+        });
+    });
+
+    // Color Swatch click handler
+    document.addEventListener('click', e => {
+        const swatch = e.target.closest('.color-swatch');
+        if (!swatch) return;
+        const picker = swatch.closest('#habitColorPicker');
+        if (!picker) return;
+        picker.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        swatch.classList.add('selected');
+        document.getElementById('habitColor').value = swatch.dataset.color;
+    });
+
+    // Transaction type toggle
+    window.setTransType = function(type) {
+        document.getElementById('transactionType').value = type;
+        document.getElementById('tabIncome').className  = type === 'income'  ? 'btn btn-primary w-full'   : 'btn btn-secondary w-full';
+        document.getElementById('tabExpense').className = type === 'expense' ? 'btn btn-danger w-full'    : 'btn btn-secondary w-full';
+    };
+
+    // Settings: save name
+    document.addEventListener('DOMContentLoaded', () => {
+        const nameInput = document.getElementById('settingsName');
+        const saved     = localStorage.getItem('slp_username');
+        if (saved) nameInput.value = saved;
+
+        document.getElementById('saveSettingsNameBtn')?.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            if (!name) return;
+            localStorage.setItem('slp_username', name);
+            document.querySelectorAll('#headerUsername, #headerUsername2').forEach(el => el.textContent = name);
+            // avatar initials
+            const avatars = document.querySelectorAll('.sidebar-avatar, .topbar-avatar');
+            avatars.forEach(a => a.textContent = name.charAt(0));
+            if (typeof showToast === 'function') showToast('نام ذخیره شد ✓', 'success');
+        });
+    });
+</script>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT FILES
+═══════════════════════════════════════════ -->
+<!-- ابتدا پایه -->
+<script src="/Planner/js/indexeddb.js"></script>
+<script src="/Planner/js/indexeddb-integration.js"></script>
+
+<!-- ماژول‌های اصلی -->
+<script src="/Planner/js/app.js"></script>
+<script src="/Planner/js/tasks.js"></script>
+<script src="/Planner/js/habits.js"></script>
+<script src="/Planner/js/finance.js"></script>
+
+<!-- ماژول‌های پیشرفته -->
+<script src="/Planner/js/drag-drop.js"></script>
+<script src="/Planner/js/export-import.js"></script>
+<script src="/Planner/js/notifications.js"></script>
+<script src="/Planner/js/onboarding.js"></script>
+<script src="/Planner/js/reminders.js"></script>
+<script src="/Planner/js/analytics.js"></script>
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/Planner/sw.js', { scope: '/Planner/' })
+                .then(reg => console.log('SW registered:', reg));
+        });
+    }
+</script>
+</body>
+</html>

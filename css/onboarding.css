@@ -1,0 +1,216 @@
+/* ══════════════════════════════════════
+   css/onboarding.css — First-run Wizard
+══════════════════════════════════════ */
+
+.onboard-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    z-index: 500;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    backdrop-filter: blur(6px);
+    animation: fadeIn .3s ease;
+}
+
+.onboard-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn .3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Progress */
+.onboard-progress {
+    padding: 1.25rem 1.25rem .5rem;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.onboard-progress-bar {
+    flex: 1;
+    height: 5px;
+    background: var(--bg-input);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.onboard-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+}
+
+.onboard-step-label {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* Body */
+.onboard-body {
+    padding: 1.5rem 1.75rem 1rem;
+    text-align: center;
+    flex: 1;
+}
+
+.onboard-icon {
+    font-size: 2.8rem;
+    margin-bottom: .75rem;
+    display: block;
+    animation: iconBounce .6s cubic-bezier(.36,.07,.19,.97);
+}
+
+@keyframes iconBounce {
+    0%   { transform: scale(.5); opacity: 0; }
+    60%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.onboard-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: .4rem;
+    letter-spacing: -.03em;
+}
+
+.onboard-sub {
+    font-size: .9rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+/* Content area — left-aligned for forms */
+.onboard-content {
+    text-align: right;
+}
+
+/* Features list */
+.onboard-features {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    text-align: right;
+}
+
+.onboard-feature {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .75rem 1rem;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    font-size: .88rem;
+}
+
+.onboard-feat-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.onboard-feature strong {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+}
+
+.onboard-feature span {
+    font-size: .8rem;
+    color: var(--text-muted);
+}
+
+/* Form */
+.onboard-form {
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+}
+
+/* Theme toggle */
+.onboard-theme-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+    margin-top: .25rem;
+}
+
+.onboard-theme-btn {
+    padding: .6rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    background: var(--bg-input);
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: var(--font);
+}
+
+.onboard-theme-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.onboard-theme-btn.active {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+/* Notification section */
+.onboard-notif {
+    text-align: right;
+}
+
+.onboard-notif-info {
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    font-size: .875rem;
+    line-height: 1.7;
+}
+
+.onboard-notif-info ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    margin-top: .5rem;
+}
+
+/* Footer */
+.onboard-footer {
+    padding: 1rem 1.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    border-top: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+    .onboard-modal   { border-radius: var(--radius); }
+    .onboard-body    { padding: 1.25rem 1.25rem .75rem; }
+    .onboard-footer  { padding: .85rem 1.25rem 1.25rem; flex-wrap: wrap; }
+    .onboard-title   { font-size: 1.1rem; }
+}

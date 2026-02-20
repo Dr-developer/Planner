@@ -1,0 +1,38 @@
+/* ══════════════════════════════════════
+   drag-drop.css
+══════════════════════════════════════ */
+
+.task-item.dragging {
+    opacity: .45;
+    cursor: grabbing;
+}
+
+.drag-ghost {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: .92;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-sm);
+    transform: rotate(2deg);
+    transition: none;
+}
+
+.drag-placeholder {
+    border: 2px dashed var(--accent);
+    border-radius: var(--radius-sm);
+    background: var(--accent-light);
+    height: 52px;
+    margin-bottom: .5rem;
+    animation: placeholderPulse .8s ease-in-out infinite alternate;
+}
+
+@keyframes placeholderPulse {
+    from { opacity: .5; }
+    to   { opacity: 1; }
+}
+
+.task-column.drop-target {
+    background: var(--accent-light);
+    border-color: var(--accent);
+}

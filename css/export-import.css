@@ -1,0 +1,146 @@
+/* ══════════════════════════════════════
+   export-import.css
+══════════════════════════════════════ */
+
+.export-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.export-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .6rem;
+    margin-top: .5rem;
+}
+
+.export-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    padding: 1rem .75rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: all var(--transition);
+    cursor: pointer;
+}
+
+.export-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+.export-icon {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* Import */
+.import-drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.75rem 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .6rem;
+    color: var(--text-muted);
+    font-size: .875rem;
+    transition: border-color var(--transition), background var(--transition);
+    cursor: pointer;
+}
+
+.import-drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.import-icon { font-size: 2rem; }
+
+.import-preview {
+    margin-top: .75rem;
+    padding: .85rem;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    font-size: .83rem;
+}
+
+.import-preview .preview-title {
+    font-weight: 700;
+    margin-bottom: .5rem;
+}
+
+.import-preview-stats {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    margin-bottom: .75rem;
+}
+
+.import-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+/* Backup list */
+.backup-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.backup-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .6rem .75rem;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    font-size: .83rem;
+}
+
+.backup-name { font-weight: 600; }
+.backup-date { color: var(--text-muted); font-size: .78rem; }
+
+.backup-actions {
+    display: flex;
+    gap: .3rem;
+}
+
+.backup-action-btn {
+    padding: .2rem .5rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.backup-action-btn:hover { color: var(--text); }
+.backup-action-btn.restore:hover { color: var(--green); border-color: var(--green); }
+.backup-action-btn.del:hover { color: var(--red); border-color: var(--red); }
+
+.empty-state {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-muted);
+    font-size: .875rem;
+}
+
+@media (max-width: 1100px) {
+    .export-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 700px) {
+    .export-grid { grid-template-columns: 1fr; }
+}

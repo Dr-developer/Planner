@@ -1,0 +1,139 @@
+/* ══════════════════════════════════════
+   habits.css
+══════════════════════════════════════ */
+
+.habits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.habit-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.habit-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--habit-color, var(--accent));
+}
+
+.habit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.habit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+}
+
+.habit-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.habit-actions {
+    display: flex;
+    gap: .25rem;
+}
+
+.habit-action {
+    width: 26px; height: 26px;
+    border-radius: 4px;
+    background: var(--bg-input);
+    font-size: .8rem;
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    transition: all var(--transition);
+}
+
+.habit-action:hover { color: var(--red); background: var(--red-light); }
+
+/* Week dots */
+.habit-week {
+    display: flex;
+    gap: .4rem;
+    margin-bottom: .85rem;
+}
+
+.week-dot {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    border: 2px solid var(--border);
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.week-dot:hover { border-color: var(--accent); }
+
+.week-dot.completed {
+    background: var(--habit-color, var(--accent));
+    border-color: var(--habit-color, var(--accent));
+    color: #fff;
+}
+
+.week-dot.today {
+    border-color: var(--habit-color, var(--accent));
+    color: var(--habit-color, var(--accent));
+    font-weight: 800;
+}
+
+/* Streak */
+.habit-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.habit-streak {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+.streak-icon { font-size: 1rem; }
+
+.habit-progress {
+    flex: 1;
+    height: 5px;
+    background: var(--bg-input);
+    border-radius: 99px;
+    overflow: hidden;
+    margin: 0 .75rem;
+}
+
+.habit-progress-bar {
+    height: 100%;
+    background: var(--habit-color, var(--accent));
+    border-radius: 99px;
+    transition: width .5s ease;
+}
+
+.habit-rate {
+    font-size: .78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}

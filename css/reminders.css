@@ -1,0 +1,116 @@
+/* ══════════════════════════════════════
+   css/reminders.css — Reminders UI
+══════════════════════════════════════ */
+
+/* Reminders section inside notification panel or dedicated page */
+.reminders-section {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.reminders-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reminders-header h3 {
+    font-size: .95rem;
+    font-weight: 700;
+}
+
+/* Reminder items */
+.reminder-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .75rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition);
+}
+
+.reminder-item:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.reminder-item.snoozed {
+    opacity: .65;
+    border-style: dashed;
+}
+
+.reminder-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+}
+
+.reminder-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.reminder-title {
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reminder-meta {
+    display: flex;
+    gap: .6rem;
+    margin-top: .2rem;
+    flex-wrap: wrap;
+}
+
+.reminder-meta span {
+    font-size: .75rem;
+    color: var(--text-muted);
+}
+
+.reminder-actions {
+    display: flex;
+    gap: .3rem;
+    flex-shrink: 0;
+}
+
+/* Toast with snooze */
+.reminder-toast {
+    border-right: 3px solid var(--blue);
+    min-width: 280px;
+    max-width: 360px;
+    align-items: flex-start;
+}
+
+/* Empty state */
+#remindersList .empty-state {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: .875rem;
+}
+
+/* Reminder badge on notification button */
+.notif-badge {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 2px solid var(--bg-sidebar);
+}
+
