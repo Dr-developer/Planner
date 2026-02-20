@@ -1,5 +1,5 @@
 
-# Smart Life Planner (برنامه‌ریز هوشمند زندگی)
+# Nini Planner (برنامه‌ریز هوشمند زندگی)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://yourusername.github.io/smart-life-planner/)
@@ -128,7 +128,7 @@ Feel free to check the [issues page](https://github.com/yourusername/smart-life-
 
 - [Vazirmatn Font](https://github.com/rastikerdar/vazirmatn) – Beautiful Persian font.
 - [Chart.js](https://www.chartjs.org/) – Simple yet flexible JavaScript charting.
-- Icons from the [OpenMoji](https://openmoji.org/) project (or any other source you used).
+- Icons from the [OpenMoji](https://openmoji.org/) project 
 
 ```
 
