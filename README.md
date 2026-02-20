@@ -56,7 +56,7 @@ All data is stored locally in **IndexedDB** – your information never leaves yo
 
 ## 🚀 Live Demo
 
-[https://yourusername.github.io/smart-life-planner/](https://github.com/Dr-developer/Planner)
+[https://github.com/Dr-developer/Planner](https://github.com/Dr-developer/Planner)
 
 ---
 
@@ -120,7 +120,7 @@ Feel free to check the [issues page](https://github.com/yourusername/smart-life-
 ## 👤 Author
 
 **Your Name**  
-- GitHub: [@yourusername](https://github.com/Dr-developer)
+- GitHub: [@Dr-developer](https://github.com/Dr-developer)
 
 ---
 
