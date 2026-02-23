@@ -208,15 +208,19 @@ document.getElementById('saveTaskBtn')?.addEventListener('click', async () => {
         desc:     document.getElementById('taskDesc').value.trim(),
         dueDate:  document.getElementById('taskDueDate').value,
         priority: document.getElementById('taskPriority').value,
-        status:   document.getElementById('taskStatus').value, // ✅ always read from dropdown
+        status:   document.getElementById('taskStatus').value, // ✅ always use dropdown value
         tags:     document.getElementById('taskTags').value.split(',').map(s => s.trim()).filter(Boolean),
-        type:     'other',  // default type, can be extended later
+        type:     'other', // default category, can be extended later
     };
+    console.log( document.getElementById('taskStatus').value);
 
+    console.log(task.status);
+    // Preserve creation date for new tasks
     if (!_editTaskId) {
         task.createdAt = new Date().toISOString();
     } else {
-        task.updatedAt = new Date().toISOString(); // optional
+        // Optionally add an updated timestamp
+        task.updatedAt = new Date().toISOString();
     }
 
     await slpData.saveTask(task);
@@ -227,7 +231,7 @@ document.getElementById('saveTaskBtn')?.addEventListener('click', async () => {
 
     showToast(_editTaskId ? 'وظیفه ویرایش شد' : 'وظیفه ایجاد شد', 'success');
 
-    // Dispatch event for reminder sync
+    // Notify other modules (reminders, etc.)
     window.dispatchEvent(new CustomEvent('slp:taskSaved', { detail: task }));
 });
 
