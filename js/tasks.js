@@ -208,14 +208,15 @@ document.getElementById('saveTaskBtn')?.addEventListener('click', async () => {
         desc:     document.getElementById('taskDesc').value.trim(),
         dueDate:  document.getElementById('taskDueDate').value,
         priority: document.getElementById('taskPriority').value,
-        status:   _editTaskId ? undefined : 'todo',
+        status:   document.getElementById('taskStatus').value, // ✅ always read from dropdown
         tags:     document.getElementById('taskTags').value.split(',').map(s => s.trim()).filter(Boolean),
-        type:     'other',  // default
-        createdAt: _editTaskId ? undefined : new Date().toISOString()
+        type:     'other',  // default type, can be extended later
     };
 
     if (!_editTaskId) {
         task.createdAt = new Date().toISOString();
+    } else {
+        task.updatedAt = new Date().toISOString(); // optional
     }
 
     await slpData.saveTask(task);
@@ -226,7 +227,7 @@ document.getElementById('saveTaskBtn')?.addEventListener('click', async () => {
 
     showToast(_editTaskId ? 'وظیفه ویرایش شد' : 'وظیفه ایجاد شد', 'success');
 
-    // Dispatch event for reminder sync, if needed
+    // Dispatch event for reminder sync
     window.dispatchEvent(new CustomEvent('slp:taskSaved', { detail: task }));
 });
 
