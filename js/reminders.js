@@ -76,6 +76,13 @@ const RemindersManager = (() => {
         }
     }
 
+    /**
+     * Sync – triggers an immediate check (used by event listeners in app.js)
+     */
+    function sync() {
+        check();
+    }
+
     function init() {
         // Only start if browser supports notifications and permission is granted or we can request later
         // (We don't request here; that's handled by NotificationManager or user action)
@@ -91,8 +98,8 @@ const RemindersManager = (() => {
         init,
         start,
         stop,
-        // Expose for manual testing
-        check
+        check,
+        sync,  // alias for check, used by event listeners
     };
 })();
 
