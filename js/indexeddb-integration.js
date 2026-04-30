@@ -219,7 +219,27 @@ const DataService = (() => {
             ? SLPDatabase.remove('backups', id).catch(_handleError('delete', 'backups'))
             : Promise.resolve(_lsDelete('slp_backups', id));
     }
+// --- Category methods ---
+    function getCategories() {
+        const lsKey = 'slp_categories';
+        return useIDB
+            ? SLPDatabase.getAll('categories')
+            : Promise.resolve(_lsGet(lsKey));
+    }
 
+    function saveCategory(category) {
+        const lsKey = 'slp_categories';
+        return useIDB
+            ? SLPDatabase.put('categories', category)
+            : Promise.resolve(_lsSave(lsKey, category));
+    }
+
+    function deleteCategory(id) {
+        const lsKey = 'slp_categories';
+        return useIDB
+            ? SLPDatabase.remove('categories', id)
+            : Promise.resolve(_lsDelete(lsKey, id));
+    }
     /**
      * Initialises the data layer:
      * - Tries to open IndexedDB (if supported)
@@ -267,7 +287,10 @@ const DataService = (() => {
         getHabits, saveHabit, deleteHabit,
         getTransactions, saveTransaction, deleteTransaction,
         getSetting, saveSetting,
-        getBackups, saveBackup, deleteBackup
+        getBackups, saveBackup, deleteBackup,
+        getCategories,      // 👈 new
+        saveCategory,       // 👈 new
+        deleteCategory      // 👈 new
     };
 })();
 

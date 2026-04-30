@@ -16,7 +16,8 @@ const SLPDatabase = (() => {
         transactions: { keyPath: 'id' },
         tags:         { keyPath: 'id' },
         settings:     { keyPath: 'key' },
-        backups:      { keyPath: 'id' }
+        backups:      { keyPath: 'id' },
+        categories: { keyPath: 'id' }
     };
 
     const INDEXES = {
@@ -27,6 +28,9 @@ const SLPDatabase = (() => {
         transactions: [
             { name: 'by_date', keyPath: 'date' },
             { name: 'by_type', keyPath: 'type' }
+        ],
+        categories: [
+            { name: 'by_name', keyPath: 'name' }
         ]
         // add indexes for other stores as needed
     };

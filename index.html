@@ -1049,7 +1049,32 @@
             display: flex; align-items: center; justify-content: flex-end; gap: 10px;
             border-top: 1px solid var(--border);
         }
-
+        .categories-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .category-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        .category-item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .category-delete-btn {
+            background: none;
+            color: var(--red);
+            font-size: 18px;
+            padding: 4px 8px;
+        }
         /* ══════════════════════════════════════
            NOTIFICATION PANEL
         ══════════════════════════════════════ */
@@ -1514,6 +1539,10 @@
         .task-analytics-table .overdue-row td {
             color: var(--red);
         }
+        .drag-over {
+            border: 2px dashed var(--accent);
+            background: var(--accent-soft);
+        }
     </style>
 </head>
 
@@ -1570,7 +1599,10 @@
                 <span class="nav-icon">📊</span>
                 تحلیل وظایف
             </button>
-
+            <button class="nav-link" data-nav="metrics">
+                <span class="nav-icon">📈</span>
+                معیارها
+            </button>
         </nav>
 
         <!-- Footer -->
@@ -1624,7 +1656,10 @@
                     🔔
                     <span class="topbar-notif-dot" id="notifDot" style="display:none"></span>
                 </button>
-
+                <!--pomodoro -->
+                <button class="topbar-btn" id="pomodoroBtn" aria-label="پومودورو">
+                    🍅
+                </button>
                 <!-- Reminders -->
                 <button
                         class="topbar-btn"
@@ -1641,6 +1676,11 @@
                         onclick="openModal('settingsModal')"
                 >
                     ⚙
+                </button>
+                <button
+                        class="btn btn-secondary"
+                        onclick="CategoryManager.openModalAndRefresh()">
+                    📂 دسته‌بندی‌ها
                 </button>
 
                 <!-- Theme (mobile) -->
@@ -1795,11 +1835,15 @@
                         <button class="task-filter-tab" data-filter="today">امروز</button>
                         <button class="task-filter-tab" data-filter="overdue">عقب‌افتاده</button>
                         <button class="task-filter-tab" data-filter="done">انجام‌شده</button>
+
                     </div>
                     <select class="tasks-sort-select" id="tasksSortSelect">
                         <option value="dueDate">مرتب‌سازی: تاریخ</option>
                         <option value="priority">مرتب‌سازی: اولویت</option>
                         <option value="created">مرتب‌سازی: جدیدترین</option>
+                    </select>
+                    <select id="taskCategoryFilter" class="form-control" style="width:150px;">
+                        <option value="all">همه دسته‌ها</option>
                     </select>
                 </div>
 
@@ -2172,6 +2216,75 @@
                     </div>
                 </div>
             </section>
+
+            <!-- ──────────────────────────────────────
+     PAGE: METRICS DASHBOARD
+────────────────────────────────────── -->
+
+            <section id="page-metrics" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">📊 داشبورد معیارها</div>
+                        <div class="page-subtitle">زمان ثبت‌شده بر اساس دسته‌بندی، نرخ تکمیل و بیشتر</div>
+                    </div>
+                    <button class="btn btn-secondary" id="exportMetricsBtn">⬇️ خروجی CSV</button>
+                </div>
+
+                <!-- انتخاب بازه زمانی -->
+                <div class="card mb-16">
+                    <div class="flex-between">
+                        <div class="flex gap-8">
+                            <button class="btn btn-secondary btn-sm" data-range="today">امروز</button>
+                            <button class="btn btn-secondary btn-sm" data-range="week">این هفته</button>
+                            <button class="btn btn-secondary btn-sm" data-range="month">این ماه</button>
+                            <button class="btn btn-secondary btn-sm" data-range="year">امسال</button>
+                            <button class="btn btn-secondary btn-sm" data-range="custom">سفارشی</button>
+                        </div>
+                        <div id="customRangeContainer" style="display: none;">
+                            <input type="date" id="customStartDate" class="form-control" style="display: inline-block; width: auto;">
+                            <span> – </span>
+                            <input type="date" id="customEndDate" class="form-control" style="display: inline-block; width: auto;">
+                            <button id="applyCustomRange" class="btn btn-primary btn-sm">اعمال</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- کارت‌های آمار -->
+                <div class="stats-grid" id="metricsCards">
+                    <!-- توسط JS پر می‌شود -->
+                </div>
+
+                <!-- نمودار میله‌ای زمان ثبت‌شده بر اساس دسته -->
+                <div class="card mb-16">
+                    <div class="dash-column-header">
+                        <span class="dash-column-title">⏱️ زمان ثبت‌شده بر اساس دسته</span>
+                    </div>
+                    <canvas id="categoryTimeChart" height="250"></canvas>
+                </div>
+
+                <!-- جدول جزئیات دسته‌بندی‌ها -->
+                <div class="card">
+                    <div class="dash-column-header">
+                        <span class="dash-column-title">📋 تحلیل دسته‌بندی‌ها</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="task-analytics-table" id="metricsTable">
+                            <thead>
+                            <tr>
+                                <th>دسته</th>
+                                <th>تعداد وظایف</th>
+                                <th>تکمیل شده</th>
+                                <th>نرخ تکمیل</th>
+                                <th>زمان ثبت شده (دقیقه)</th>
+                                <th>زمان تخمینی (دقیقه)</th>
+                                <th>میانگین زمان هر وظیفه</th>
+                            </tr>
+                            </thead>
+                            <tbody id="metricsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </main><!-- /page-content -->
     </div><!-- /main-area -->
 </div><!-- /app-shell -->
@@ -2195,6 +2308,7 @@
         <button class="nav-link" data-nav="finance">₿ مالی</button>
         <button class="nav-link" data-nav="backup">⤓ پشتیبان‌گیری</button>
         <button class="nav-link" data-nav="analytics">📊 تحلیل وظایف</button>
+        <button class="nav-link" data-nav="metrics">📈 معیارها</button>
     </div>
     <div class="sidebar-footer">
         <button class="btn-theme-sidebar" id="themeToggleBtnMobile2">
@@ -2321,13 +2435,35 @@
                 </div>
                 <input type="hidden" id="taskPriority" value="medium" />
             </div>
-
+            <div class="form-group">
+                <label class="form-label">دسته‌بندی</label>
+                <select id="taskCategory" class="form-control"></select>
+                <button type="button" class="btn btn-ghost btn-sm mt-4" onclick="openModal('categoryModal')">➕ مدیریت دسته‌ها</button>
+            </div>
             <div class="form-group">
                 <label class="form-label" for="taskTags">برچسب‌ها</label>
                 <input type="text" class="form-control" id="taskTags" placeholder="برچسب‌ها با کاما جدا کنید" />
                 <div class="form-hint">مثال: کار، شخصی، فوری</div>
             </div>
-
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="taskEstimate">⏱ زمان تخمینی (دقیقه)</label>
+                    <input type="number" class="form-control" id="taskEstimate" min="0" step="5" placeholder="مثلاً 60">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="taskLoggedTime">📊 زمان ثبت‌شده (دقیقه)</label>
+                    <input type="number" class="form-control" id="taskLoggedTime" readonly disabled>
+                    <div class="form-hint">ثبت شده توسط تایمر</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">📝 ثبت وقت دستی (دقیقه)</label>
+                <div class="flex gap-8">
+                    <input type="number" id="manualLogMinutes" class="form-control" placeholder="مثلاً 30" min="1">
+                    <button type="button" id="manualLogBtn" class="btn btn-secondary">+ ثبت</button>
+                </div>
+                <div class="form-hint">زمان اضافه شده به جمع ثبت‌شده اضافه می‌شود</div>
+            </div>
             <div class="form-group">
                 <label class="form-label" for="taskReminder">یادآور</label>
                 <input type="datetime-local" class="form-control" id="taskReminder" />
@@ -2555,8 +2691,70 @@
         </div>
     </div>
 </div>
+<!-- Pomodoro Timer Modal -->
+<div id="pomodoroModal" class="modal-overlay hidden">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-title">🍅 پومودورو تایمر</div>
+            <button class="modal-close" data-modal="pomodoroModal">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">وظیفه</label>
+                <select id="pomodoroTaskSelect" class="form-control">
+                    <option value="">-- انتخاب کنید --</option>
+                </select>
+                <div class="form-hint">وظایف امروز و عقب‌افتاده</div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">مدت کار (دقیقه)</label>
+                    <input type="number" id="pomodoroWorkTime" class="form-control" value="25" min="1" step="5">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">مدت استراحت (دقیقه)</label>
+                    <input type="number" id="pomodoroBreakTime" class="form-control" value="5" min="1" step="5">
+                </div>
+            </div>
+            <div class="flex-center" style="margin: 20px 0;">
+                <div class="timer-circle" style="font-size: 48px; font-family: monospace; background: var(--bg-card); padding: 20px; border-radius: 50%; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--accent);">
+                    <span id="pomodoroDisplay">25:00</span>
+                </div>
+            </div>
+            <div class="flex-center gap-16">
+                <button id="pomodoroStartBtn" class="btn btn-primary">▶ شروع</button>
+                <button id="pomodoroPauseBtn" class="btn btn-secondary" disabled>⏸ توقف</button>
+                <button id="pomodoroStopBtn" class="btn btn-danger" disabled>⏹ ذخیره و توقف</button>
+            </div>
+            <div id="pomodoroStatus" class="text-center text-muted mt-16">در حال انتظار برای شروع</div>
+        </div>
+    </div>
+</div>
+<!-- Category Timer Modal -->
 
-
+<div id="categoryModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">مدیریت دسته‌بندی‌ها</div>
+            <button class="modal-close" data-modal="categoryModal">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">ایجاد دسته جدید</label>
+                <div class="form-row">
+                    <input type="text" id="newCategoryName" class="form-control" placeholder="نام">
+                    <input type="text" id="newCategoryEmoji" class="form-control" placeholder="😊 (شکلک)" maxlength="2">
+                </div>
+                <button id="addCategoryBtn" class="btn btn-primary mt-8 w-full">+ افزودن</button>
+            </div>
+            <hr class="divider">
+            <div class="form-group">
+                <label class="form-label">دسته‌بندی‌های موجود</label>
+                <div id="categoriesList" class="categories-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- ═══════════════════════════════════════════
      NOTIFICATION PANEL
 ═══════════════════════════════════════════ -->
@@ -2656,12 +2854,12 @@
 <!-- ابتدا پایه -->
 <script src="/Planner/js/indexeddb.js"></script>
 <script src="/Planner/js/indexeddb-integration.js"></script>
-
+<script src ="/Planner/js/categories.js"></script>
 <!-- ماژول‌های مورد نیاز app -->
 <script src="/Planner/js/reminders.js"></script>   <!-- now loaded before app.js -->
 
 <!-- هسته اصلی -->
-<script src="/Planner/js/app.js"></script>
+<script src="/Planner/js/app.js"></script>   <!-- now loaded before app.js -->
 
 <!-- بقیه ماژول‌ها -->
 <script src="/Planner/js/tasks.js"></script>
@@ -2672,7 +2870,7 @@
 <script src="/Planner/js/notifications.js"></script>
 <script src="/Planner/js/onboarding.js"></script>
 <script src="/Planner/js/analytics.js"></script>
-    
+
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -2681,5 +2879,7 @@
         });
     }
 </script>
+
+
 </body>
 </html>

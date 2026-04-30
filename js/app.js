@@ -194,7 +194,7 @@ window.ThemeManager = ThemeManager;
 ───────────────────────────────────── */
 
 const NavManager = (() => {
-    const PAGES = ['dashboard', 'tasks', 'habits', 'finance', 'backup', 'analytics']; // add 'analytics'
+    const PAGES = ['dashboard', 'tasks', 'habits', 'finance', 'backup', 'analytics', 'metrics'];
     let _current = 'dashboard';
 
 
@@ -204,7 +204,8 @@ const NavManager = (() => {
         habits:    () => typeof renderHabits     === 'function' && renderHabits(),
         finance:   () => typeof renderFinance    === 'function' && renderFinance(),
         backup:    () => typeof renderExportPage === 'function' && renderExportPage(),
-        analytics: () => typeof renderAnalytics  === 'function' && renderAnalytics(), // new
+        analytics: () => typeof renderAnalytics  === 'function' && renderAnalytics(),
+        metrics:   () => typeof MetricsDashboard !== 'undefined' && MetricsDashboard.init()
     };
 
     function navigateTo(page) {
@@ -507,10 +508,15 @@ function initDragDropIntegration() {
 }
 
 function initReminderSync() {
-    if (typeof RemindersManager === 'undefined') return;
-
-    window.addEventListener('slp:taskSaved',  () => RemindersManager.sync());
-    window.addEventListener('slp:habitSaved', () => RemindersManager.sync());
+    // Wait for RemindersManager to be available if it's loaded later
+    if (typeof RemindersManager !== 'undefined' && typeof RemindersManager.sync === 'function') {
+        window.addEventListener('slp:taskSaved', () => RemindersManager.sync());
+        window.addEventListener('slp:habitSaved', () => RemindersManager.sync());
+    } else {
+        console.warn('RemindersManager not ready yet – will try again later');
+        // Retry in a few seconds
+        setTimeout(() => initReminderSync(), 1000);
+    }
 }
 
 function updateUserDisplay() {
