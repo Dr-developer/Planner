@@ -6,7 +6,7 @@
     <title>Nini Planner </title>
     <meta name="description" content="برنامه‌ریز هوشمند وظایف، عادت‌ها و امور مالی" />
     <meta name="theme-color" content="#0f0f14" />
-    <link rel="manifest" href="/Planner/manifest.json">
+    <link rel="manifest" href=" /manifest.json">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -2852,29 +2852,31 @@
      JAVASCRIPT FILES
 ═══════════════════════════════════════════ -->
 <!-- ابتدا پایه -->
-<script src="/Planner/js/indexeddb.js"></script>
-<script src="/Planner/js/indexeddb-integration.js"></script>
-<script src ="/Planner/js/categories.js"></script>
+<script src=" /Planner/js/indexeddb.js"></script>
+<script src=" /Planner/js/indexeddb-integration.js"></script>
+<script src ="/Planner /js/categories.js"></script>
 <!-- ماژول‌های مورد نیاز app -->
-<script src="/Planner/js/reminders.js"></script>   <!-- now loaded before app.js -->
+<script src=" /Planner/js/reminders.js"></script>   <!-- now loaded before app.js -->
 
 <!-- هسته اصلی -->
-<script src="/Planner/js/app.js"></script>   <!-- now loaded before app.js -->
+<script src=" /Planner/js/app.js"></script>   <!-- now loaded before app.js -->
 
 <!-- بقیه ماژول‌ها -->
-<script src="/Planner/js/tasks.js"></script>
-<script src="/Planner/js/habits.js"></script>
-<script src="/Planner/js/finance.js"></script>
-<script src="/Planner/js/drag-drop.js"></script>
-<script src="/Planner/js/export-import.js"></script>
-<script src="/Planner/js/notifications.js"></script>
-<script src="/Planner/js/onboarding.js"></script>
-<script src="/Planner/js/analytics.js"></script>
+<script src=" /Planner/js/tasks.js"></script>
+<script src="/Planner/js/timer.js"></script>
+<script src="/Planner/js/pomodoro.js"></script>
+<script src=" /Planner/js/habits.js"></script>
+<script src=" /Planner/js/finance.js"></script>
+<script src=" /Planner/js/drag-drop.js"></script>
+<script src=" /Planner/js/export-import.js"></script>
+<script src=" /Planner/js/notifications.js"></script>
+<script src=" /Planner/js/onboarding.js"></script>
+<script src=" /Planner/js/analytics.js"></script>
 
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/Planner/sw.js', { scope: '/Planner/' })
+            navigator.serviceWorker.register(' /sw.js', { scope: ' /' })
                 .then(reg => console.log('SW registered:', reg));
         });
     }
